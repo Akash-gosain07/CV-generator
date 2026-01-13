@@ -1,20 +1,51 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+This is a full-stack Resume Builder website made using the MERN stack (MongoDB, Express, React, Node.js).
+The main goal of this project is to help users build ATS-friendly resumes with a clean UI, live preview, and easy PDF download.
 
-# Run and deploy your AI Studio app
+It also comes with Indian sample data so anyone in India (college students / interns / freshers) can quickly generate a proper resume and modify it based on their needs.
 
-This contains everything you need to run your app locally.
+What this project does
 
-View your app in AI Studio: https://ai.studio/apps/drive/1TLcEGsEQJQ7kN3rAGmu3fE7tlMe8ow5k
+✅ Users can register/login and save their resumes
+✅ Create multiple resumes under one account
+✅ Edit resume sections like education, skills, projects, experience etc.
+✅ Live preview while editing
+✅ Switch between different templates
+✅ Export the resume as a PDF
+✅ Works properly on mobile, tablet and laptop screens
 
-## Run Locally
+Templates included
+I added multiple templates to cover different use cases like:
+Normal professional resume
+Minimal modern resume
+Placement style resume (college/IIT format)
+Creative tech resume (still ATS safe)
+Govt/UPSC-style bio-data format
 
-**Prerequisites:**  Node.js
+Special things in this project
+Intro animation
 
+The landing page has a short intro animation (Framer Motion + SVG) which gives a premium feel when the app starts.
+There is also a skip option so the user doesn’t get stuck.
+Indian sample resume
+There is an option like “Use Sample Resume” which fills the resume with Indian-style details like:
+Indian names and cities
+College format like B.Tech CSE
+Projects like Lost & Found app / Resume Builder app
+Internship examples like Internshala / TCS iON
+Certificates like NPTEL / Coursera
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Tech stack used
+Frontend
+React.js
+Tailwind CSS
+Framer Motion
+React Router
+
+Backend
+Node.js
+Express.js
+MongoDB
+JWT Authentication
+
+PDF Export
+Server-side PDF generation (ATS-friendly layout
