@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link, useSearchParams } from 'react-router-dom';
+import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronLeft, Download, Eye, 
@@ -8,24 +8,35 @@ import {
   Code, Award, Plus, Trash2, ChevronDown, Rocket, 
   Languages, Globe, Star, MoveUp, MoveDown, Layout, Sidebar
 } from 'lucide-react';
-import { ResumeData, TemplateType, SkillCategory, Experience, Project, Education } from '../types';
+import { ResumeData, TemplateType, SkillCategory, Experience, Project, Education, User } from '../types';
 import { SAMPLE_RESUME } from '../constants';
 import ResumePreview from '../components/ResumePreview';
 
 const BuilderPage: React.FC = () => {
   const { resumeId } = useParams();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [resume, setResume] = useState<ResumeData | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState('personal');
   const [isMobilePreview, setIsMobilePreview] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('cv_resumes_cv-user');
+    const savedUser = localStorage.getItem('cv_user');
+    if (!savedUser) {
+      navigate('/auth');
+      return;
+    }
+    const user = JSON.parse(savedUser) as User;
+    setCurrentUser(user);
+
+    const storageKey = `cv_resumes_${user.id}`;
+    const savedResumes = localStorage.getItem(storageKey);
     const templateParam = searchParams.get('template') as TemplateType;
     
     let currentResume: ResumeData;
-    if (saved) {
-      const allResumes = JSON.parse(saved);
+    if (savedResumes) {
+      const allResumes = JSON.parse(savedResumes);
       const found = allResumes.find((r: ResumeData) => r.id === resumeId);
       currentResume = found ? (templateParam ? { ...found, templateId: templateParam } : found) 
                            : { ...SAMPLE_RESUME, id: resumeId || 'new', templateId: templateParam || TemplateType.MODERN };
@@ -33,23 +44,29 @@ const BuilderPage: React.FC = () => {
       currentResume = { ...SAMPLE_RESUME, id: resumeId || 'new', templateId: templateParam || TemplateType.MODERN };
     }
     setResume(currentResume);
-  }, [resumeId, searchParams]);
+  }, [resumeId, searchParams, navigate]);
 
   const updateResume = useCallback((updates: Partial<ResumeData> | ((prev: ResumeData) => ResumeData)) => {
+    if (!currentUser) return;
     setResume(prev => {
       if (!prev) return prev;
       const next = typeof updates === 'function' ? updates(prev) : { ...prev, ...updates };
-      const saved = localStorage.getItem('cv_resumes_cv-user');
+      
+      const storageKey = `cv_resumes_${currentUser.id}`;
+      const saved = localStorage.getItem(storageKey);
       let allResumes = saved ? JSON.parse(saved) : [];
       const index = allResumes.findIndex((r: ResumeData) => r.id === next.id);
-      if (index > -1) allResumes[index] = next;
-      else allResumes.push(next);
-      localStorage.setItem('cv_resumes_cv-user', JSON.stringify(allResumes));
+      if (index > -1) {
+        allResumes[index] = next;
+      } else {
+        allResumes.push(next);
+      }
+      localStorage.setItem(storageKey, JSON.stringify(allResumes));
       return next;
     });
-  }, [resumeId]);
+  }, [currentUser]);
 
-  if (!resume) return <div className="min-h-screen bg-black flex items-center justify-center font-mono animate-pulse">BOOTING ENGINE...</div>;
+  if (!resume || !currentUser) return <div className="min-h-screen bg-black flex items-center justify-center font-mono animate-pulse">BOOTING ENGINE...</div>;
 
   const addArrayItem = (key: keyof ResumeData, newItem: any) => {
     updateResume(p => ({ ...p, [key]: [...(p[key] as any[]), newItem] }));
@@ -118,6 +135,9 @@ const BuilderPage: React.FC = () => {
             <option value={TemplateType.TECH_SIDEBAR}>Tech Sidebar</option>
             <option value={TemplateType.ELEGANT}>Elegant Serif</option>
             <option value={TemplateType.PURE_ATS}>Strict ATS</option>
+            <option value={TemplateType.CLASSIC}>Classic Professional</option>
+            <option value={TemplateType.CREATIVE_TECH}>Creative Tech</option>
+            <option value={TemplateType.GOVT_BIO}>Govt Bio-data</option>
           </select>
           <button 
             onClick={() => window.print()} 
@@ -129,7 +149,6 @@ const BuilderPage: React.FC = () => {
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* BUILDER SIDEBAR */}
         <aside className={`w-full md:w-[500px] bg-[#0a0a0a] border-r border-white/5 flex flex-col no-print ${isMobilePreview ? 'hidden' : 'block'}`}>
           <div className="flex-1 overflow-y-auto p-6 space-y-4 pb-40">
             
@@ -254,28 +273,21 @@ const BuilderPage: React.FC = () => {
           </div>
         </aside>
 
-        {/* PREVIEW PANEL */}
         <section className={`flex-1 bg-[#111] overflow-y-auto no-print relative group ${!isMobilePreview ? 'hidden md:block' : 'block'}`}>
           <div className="min-h-full flex items-start justify-center p-8 md:p-14">
              <div className="item-transition transform scale-[0.8] lg:scale-100 origin-top shadow-[0_40px_100px_rgba(0,0,0,0.5)]">
                <ResumePreview data={resume} />
              </div>
           </div>
-          <div className="fixed bottom-8 left-[520px] bg-black/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest text-white/50 animate-pulse no-print">
-            WYSWYG Real-time Preview
-          </div>
         </section>
       </div>
 
-      {/* Hidden for regular screen but used by window.print() */}
       <div className="hidden print:block bg-white h-full w-full">
         <ResumePreview data={resume} isPrinting={true} />
       </div>
     </div>
   );
 };
-
-// HELPER COMPONENTS
 
 const Accordion = ({ title, icon, children, isOpen, onClick }: { title: string, icon: React.ReactNode, children: React.ReactNode, isOpen: boolean, onClick: () => void }) => (
   <div className={`border border-white/5 rounded-3xl overflow-hidden transition-all duration-500 ${isOpen ? 'bg-[#0f0f0f] shadow-2xl border-white/10 ring-1 ring-white/5' : 'hover:bg-white/5'}`}>

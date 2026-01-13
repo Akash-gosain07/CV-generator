@@ -23,7 +23,6 @@
       .font-serif { font-family: 'Libre Baskerville', serif; }
       .font-mono { font-family: 'Roboto Mono', monospace; }
       
-      /* Print Optimization - Force A4 sizing and remove UI elements */
       @media print {
         .no-print { display: none !important; }
         body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
@@ -34,11 +33,8 @@
       }
       
       #print-root { display: none; }
-      
-      /* Smooth transitions for editor items */
       .item-transition { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
       
-      /* Custom Scrollbar */
       ::-webkit-scrollbar { width: 5px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
@@ -53,6 +49,7 @@
     "react-router-dom": "https://esm.sh/react-router-dom@7.1.5?deps=react@19.0.0,react-dom@19.0.0",
     "lucide-react": "https://esm.sh/lucide-react@0.475.0?bundle&deps=react@19.0.0",
     "framer-motion": "https://esm.sh/framer-motion@11.11.17?bundle&deps=react@19.0.0,react-dom@19.0.0",
+    "react/jsx-runtime": "https://esm.sh/react@19.0.0/jsx-runtime",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/"
   }
@@ -61,7 +58,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- Separate portal for printing to ensure exact A4 scaling -->
     <div id="print-root"></div>
     <script type="module" src="./index.tsx"></script>
   </body>
