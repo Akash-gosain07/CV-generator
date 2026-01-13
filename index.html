@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CV-GENIUS | World Class Resume Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --builder-bg: #050505;
+        --sidebar-bg: #0a0a0a;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--builder-bg);
+        color: #ffffff;
+        overflow-x: hidden;
+      }
+      .font-serif { font-family: 'Libre Baskerville', serif; }
+      .font-mono { font-family: 'Roboto Mono', monospace; }
+      
+      /* Print Optimization - Force A4 sizing and remove UI elements */
+      @media print {
+        .no-print { display: none !important; }
+        body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
+        #root { display: none !important; }
+        #print-root { display: block !important; width: 210mm; min-height: 297mm; padding: 0; margin: 0; }
+        .resume-shadow { box-shadow: none !important; border: none !important; }
+        @page { size: A4; margin: 0; }
+      }
+      
+      #print-root { display: none; }
+      
+      /* Smooth transitions for editor items */
+      .item-transition { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+      
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar { width: 5px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #444; }
+    </style>
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "react-router-dom": "https://esm.sh/react-router-dom@7.1.5?deps=react@19.0.0,react-dom@19.0.0",
+    "lucide-react": "https://esm.sh/lucide-react@0.475.0?bundle&deps=react@19.0.0",
+    "framer-motion": "https://esm.sh/framer-motion@11.11.17?bundle&deps=react@19.0.0,react-dom@19.0.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- Separate portal for printing to ensure exact A4 scaling -->
+    <div id="print-root"></div>
+    <script type="module" src="./index.tsx"></script>
+  </body>
+</html>
