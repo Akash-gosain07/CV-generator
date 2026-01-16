@@ -36,16 +36,22 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, isPrinting = false 
 
   const styles = getTemplateStyles();
 
-  const SectionHeading = ({ children, customClass = "" }: { children: React.ReactNode, customClass?: string }) => {
+  const SectionHeading = ({ children, customClass = "" }: { children?: React.ReactNode, customClass?: string }) => {
     const base = "text-[12px] font-bold uppercase tracking-wider mb-2 pb-0.5 border-b-[1.5px]";
     if (templateId === TemplateType.IIT_PLACEMENT) return <h2 className={`text-[11px] font-bold uppercase border-b border-black mb-1.5 mt-2 ${customClass}`}>{children}</h2>;
     if (templateId === TemplateType.PURE_ATS || templateId === TemplateType.GOVT_BIO) return <h2 className={`text-[12px] font-bold uppercase border-b border-black mb-2 mt-3 ${customClass}`}>{children}</h2>;
     return <h2 className={`${base} ${styles.border} ${styles.accent} mt-4 ${customClass}`}>{children}</h2>;
   };
 
-  const ListItem = ({ children }: { children: React.ReactNode }) => (
+  const ListItem = ({ children }: { children?: React.ReactNode, key?: any }) => (
     <li className="text-[10px] md:text-[10.5px] leading-relaxed mb-0.5 ml-4 list-disc text-gray-800">{children}</li>
   );
+
+  const formatDates = (start: string, end: string) => {
+    if (!start && !end) return "";
+    if (start && end) return `${start} – ${end}`;
+    return start || end;
+  };
 
   const Header = () => {
     if (templateId === TemplateType.TECH_SIDEBAR) {
@@ -101,7 +107,6 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, isPrinting = false 
   };
 
   const renderContent = () => {
-    // Shared components for main content sections
     const ExperienceBlock = ({ items, title }: { items: any[], title: string }) => items.length > 0 ? (
       <section>
         <SectionHeading>{title}</SectionHeading>
@@ -109,7 +114,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, isPrinting = false 
           <div key={exp.id} className="mb-3">
             <div className="flex justify-between items-baseline font-bold text-[11px]">
               <span>{exp.role}</span>
-              <span className="text-gray-500 font-normal text-[10px]">{exp.startDate} - {exp.endDate}</span>
+              <span className="text-gray-500 font-normal text-[10px]">{formatDates(exp.startDate, exp.endDate)}</span>
             </div>
             <div className={`${styles.accent} text-[10.5px] font-bold mb-1 italic`}>{exp.company} {exp.location && `| ${exp.location}`}</div>
             <ul className="space-y-0.5">
@@ -164,7 +169,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, isPrinting = false 
                   <p className="font-bold text-[11px] leading-tight">{edu.institution}</p>
                   <p className="text-[10px] text-gray-600 italic">{edu.degree}</p>
                   <div className="flex justify-between items-center text-[9.5px] mt-0.5">
-                    <span className="text-gray-400">{edu.startDate} - {edu.endDate}</span>
+                    <span className="text-gray-400">{formatDates(edu.startDate, edu.endDate)}</span>
                     <span className="font-bold bg-gray-50 px-1 rounded">{edu.grade}</span>
                   </div>
                 </div>
@@ -224,7 +229,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, isPrinting = false 
               <div key={edu.id} className="mb-3">
                 <div className="flex justify-between font-bold text-[10.5px]">
                   <span>{edu.institution}</span>
-                  <span className="text-gray-500 font-normal text-[9.5px]">{edu.startDate} - {edu.endDate}</span>
+                  <span className="text-gray-500 font-normal text-[9.5px]">{formatDates(edu.startDate, edu.endDate)}</span>
                 </div>
                 <div className="flex justify-between text-[10px] italic">
                   <span>{edu.degree}</span>
@@ -276,7 +281,6 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, isPrinting = false 
       <Header />
       {renderContent()}
       
-      {/* Visual A4 divider (only visible in editor) */}
       {!isPrinting && (
         <div className="absolute top-[1050px] left-0 w-full h-px border-t border-dashed border-red-200 pointer-events-none no-print">
           <span className="absolute right-2 top-[-10px] text-[8px] text-red-300 font-bold uppercase">End of Page 1</span>

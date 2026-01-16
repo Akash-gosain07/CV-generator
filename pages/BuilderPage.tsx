@@ -1,16 +1,18 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronLeft, Download, Eye, 
   User as UserIcon, Briefcase, GraduationCap, 
   Code, Award, Plus, Trash2, ChevronDown, Rocket, 
-  Languages, Globe, Star, MoveUp, MoveDown, Layout, Sidebar
+  Languages, Globe, Star, MoveUp, MoveDown, Layout, Sidebar, Loader2
 } from 'lucide-react';
 import { ResumeData, TemplateType, SkillCategory, Experience, Project, Education, User } from '../types';
 import { SAMPLE_RESUME } from '../constants';
 import ResumePreview from '../components/ResumePreview';
+
+declare var html2pdf: any;
 
 const BuilderPage: React.FC = () => {
   const { resumeId } = useParams();
@@ -20,6 +22,9 @@ const BuilderPage: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState('personal');
   const [isMobilePreview, setIsMobilePreview] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  
+  const resumeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('cv_user');
@@ -65,6 +70,35 @@ const BuilderPage: React.FC = () => {
       return next;
     });
   }, [currentUser]);
+
+  const handleDownload = async () => {
+    const element = document.getElementById('resume-root');
+    if (!element || !resume) return;
+    
+    setIsGenerating(true);
+    
+    const opt = {
+      margin: 0,
+      filename: `${resume.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`,
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true,
+        letterRendering: true,
+        backgroundColor: '#ffffff'
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error('PDF Generation failed:', error);
+      window.print();
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   if (!resume || !currentUser) return <div className="min-h-screen bg-black flex items-center justify-center font-mono animate-pulse">BOOTING ENGINE...</div>;
 
@@ -140,10 +174,12 @@ const BuilderPage: React.FC = () => {
             <option value={TemplateType.GOVT_BIO}>Govt Bio-data</option>
           </select>
           <button 
-            onClick={() => window.print()} 
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_10px_20px_-10px_rgba(37,99,235,0.5)] active:scale-95"
+            onClick={handleDownload}
+            disabled={isGenerating}
+            className={`px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_10px_20px_-10px_rgba(37,99,235,0.5)] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            <Download size={14} /> PDF
+            {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} 
+            {isGenerating ? 'Generating...' : 'Download PDF'}
           </button>
         </div>
       </header>
@@ -184,7 +220,8 @@ const BuilderPage: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <Input label="Company" value={exp.company} onChange={(v) => updateArrayItem('experience', i, { company: v })} />
                     <Input label="Role" value={exp.role} onChange={(v) => updateArrayItem('experience', i, { role: v })} />
-                    <Input label="Dates" placeholder="e.g. Jan 2023 - Present" value={exp.startDate} onChange={(v) => updateArrayItem('experience', i, { startDate: v })} />
+                    <Input label="Start Date" placeholder="Oct 2022" value={exp.startDate} onChange={(v) => updateArrayItem('experience', i, { startDate: v })} />
+                    <Input label="End Date" placeholder="March 2024 / Present" value={exp.endDate} onChange={(v) => updateArrayItem('experience', i, { endDate: v })} />
                     <Input label="Location" value={exp.location} onChange={(v) => updateArrayItem('experience', i, { location: v })} />
                   </div>
                   <textarea 
@@ -207,7 +244,8 @@ const BuilderPage: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <Input label="Organization" value={int.company} onChange={(v) => updateArrayItem('internships', i, { company: v })} />
                     <Input label="Role" value={int.role} onChange={(v) => updateArrayItem('internships', i, { role: v })} />
-                    <Input label="Duration" value={int.startDate} onChange={(v) => updateArrayItem('internships', i, { startDate: v })} />
+                    <Input label="Start Date" placeholder="May 2023" value={int.startDate} onChange={(v) => updateArrayItem('internships', i, { startDate: v })} />
+                    <Input label="End Date" placeholder="July 2023" value={int.endDate} onChange={(v) => updateArrayItem('internships', i, { endDate: v })} />
                   </div>
                   <textarea placeholder="Key Contributions..." className="w-full bg-black border border-white/10 rounded-xl p-3 text-[11px] min-h-[80px]" value={int.description} onChange={(e) => updateArrayItem('internships', i, { description: e.target.value })} />
                 </div>
@@ -238,7 +276,10 @@ const BuilderPage: React.FC = () => {
                     <Input label="Institution" value={edu.institution} onChange={(v) => updateArrayItem('education', i, { institution: v })} />
                     <Input label="Degree/Course" value={edu.degree} onChange={(v) => updateArrayItem('education', i, { degree: v })} />
                     <Input label="GPA / CGPA" value={edu.grade} onChange={(v) => updateArrayItem('education', i, { grade: v })} />
-                    <Input label="Timeline" value={edu.startDate} onChange={(v) => updateArrayItem('education', i, { startDate: v })} />
+                    <div className="col-span-2 grid grid-cols-2 gap-4">
+                      <Input label="Start Date" placeholder="2021" value={edu.startDate} onChange={(v) => updateArrayItem('education', i, { startDate: v })} />
+                      <Input label="End Date" placeholder="2025 (Expected)" value={edu.endDate} onChange={(v) => updateArrayItem('education', i, { endDate: v })} />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -275,7 +316,7 @@ const BuilderPage: React.FC = () => {
 
         <section className={`flex-1 bg-[#111] overflow-y-auto no-print relative group ${!isMobilePreview ? 'hidden md:block' : 'block'}`}>
           <div className="min-h-full flex items-start justify-center p-8 md:p-14">
-             <div className="item-transition transform scale-[0.8] lg:scale-100 origin-top shadow-[0_40px_100px_rgba(0,0,0,0.5)]">
+             <div ref={resumeRef} className="item-transition transform scale-[0.8] lg:scale-100 origin-top shadow-[0_40px_100px_rgba(0,0,0,0.5)]">
                <ResumePreview data={resume} />
              </div>
           </div>
@@ -289,7 +330,7 @@ const BuilderPage: React.FC = () => {
   );
 };
 
-const Accordion = ({ title, icon, children, isOpen, onClick }: { title: string, icon: React.ReactNode, children: React.ReactNode, isOpen: boolean, onClick: () => void }) => (
+const Accordion = ({ title, icon, children, isOpen, onClick }: { title: string, icon: React.ReactNode, children?: React.ReactNode, isOpen: boolean, onClick: () => void }) => (
   <div className={`border border-white/5 rounded-3xl overflow-hidden transition-all duration-500 ${isOpen ? 'bg-[#0f0f0f] shadow-2xl border-white/10 ring-1 ring-white/5' : 'hover:bg-white/5'}`}>
     <button onClick={onClick} className="w-full flex items-center justify-between px-6 py-5">
       <div className="flex items-center gap-4">
@@ -312,7 +353,7 @@ const Accordion = ({ title, icon, children, isOpen, onClick }: { title: string, 
 
 const Input = ({ label, value, onChange, placeholder }: { label: string, value: string, onChange: (v: string) => void, placeholder?: string }) => (
   <div className="space-y-2">
-    <label className="text-[9px] uppercase font-black text-gray-600 block tracking-widest">{label}</label>
+    <label className="text-[9px] uppercase font-black text-gray-600 block mb-2 tracking-widest">{label}</label>
     <input 
       type="text" 
       value={value}
